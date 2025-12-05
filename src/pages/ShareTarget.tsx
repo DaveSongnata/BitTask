@@ -65,17 +65,33 @@ export function ShareTarget() {
 
   // Initialize board
   useEffect(() => {
-    if (boards && boards.length > 0 && currentBoardId === null) {
-      const firstBoardId = boards[0]?.id;
-      if (firstBoardId !== undefined) {
-        setCurrentBoardId(firstBoardId);
-      }
-    } else if (boards && boards.length === 0) {
-      void ensureDefaultBoard().then((board) => {
-        if (board.id !== undefined) {
-          setCurrentBoardId(board.id);
-        }
-      });
+    // Wait for boards to load (not undefined)
+    if (boards === undefined) return;
+
+    // If no boards exist, create default
+    if (boards.length === 0) {
+      void ensureDefaultBoard()
+        .then((board) => {
+          if (board.id !== undefined) {
+            setCurrentBoardId(board.id);
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to create default board:', error);
+        });
+      return;
+    }
+
+    // If currentBoardId is already set and valid, do nothing
+    if (currentBoardId !== null) {
+      const boardStillExists = boards.some((b) => b.id === currentBoardId);
+      if (boardStillExists) return;
+    }
+
+    // Otherwise use first board
+    const firstBoardId = boards[0]?.id;
+    if (firstBoardId !== undefined) {
+      setCurrentBoardId(firstBoardId);
     }
   }, [boards, currentBoardId, ensureDefaultBoard]);
 

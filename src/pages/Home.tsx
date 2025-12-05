@@ -36,29 +36,44 @@ export function Home() {
 
   // Ensure default board exists and set current board
   useEffect(() => {
-    if (boards && boards.length > 0 && currentBoardId === null) {
-      // Check if there's a board param in URL
-      const boardParam = searchParams.get('board');
-      if (boardParam) {
-        const boardId = parseInt(boardParam, 10);
-        const boardExists = boards.some((b) => b.id === boardId);
-        if (boardExists) {
-          setCurrentBoardId(boardId);
-          return;
-        }
+    // Wait for boards to load (not undefined)
+    if (boards === undefined) return;
+
+    // If no boards exist, create default
+    if (boards.length === 0) {
+      void ensureDefaultBoard()
+        .then((board) => {
+          if (board.id !== undefined) {
+            setCurrentBoardId(board.id);
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to create default board:', error);
+        });
+      return;
+    }
+
+    // If currentBoardId is already set and valid, do nothing
+    if (currentBoardId !== null) {
+      const boardStillExists = boards.some((b) => b.id === currentBoardId);
+      if (boardStillExists) return;
+    }
+
+    // Check if there's a board param in URL
+    const boardParam = searchParams.get('board');
+    if (boardParam) {
+      const boardId = parseInt(boardParam, 10);
+      const boardExists = boards.some((b) => b.id === boardId);
+      if (boardExists) {
+        setCurrentBoardId(boardId);
+        return;
       }
-      // Otherwise use first board
-      const firstBoardId = boards[0]?.id;
-      if (firstBoardId !== undefined) {
-        setCurrentBoardId(firstBoardId);
-      }
-    } else if (boards && boards.length === 0) {
-      // Create default board if none exist
-      void ensureDefaultBoard().then((board) => {
-        if (board.id !== undefined) {
-          setCurrentBoardId(board.id);
-        }
-      });
+    }
+
+    // Otherwise use first board
+    const firstBoardId = boards[0]?.id;
+    if (firstBoardId !== undefined) {
+      setCurrentBoardId(firstBoardId);
     }
   }, [boards, currentBoardId, ensureDefaultBoard, searchParams]);
 
@@ -78,9 +93,10 @@ export function Home() {
     completed: t('home.filterCompleted'),
   };
 
-  if (!dbReady || currentBoardId === null) {
+  // Show loader while database or boards are loading
+  if (!dbReady || boards === undefined || currentBoardId === null) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-center justify-center bg-pixel-bg">
         <PixelLoader size="lg" />
       </div>
     );
