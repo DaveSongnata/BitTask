@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { Task, Attachment, OfflineOp, Settings } from '@/types';
+import type { Task, Attachment, OfflineOp, Settings, Board, Subtask } from '@/types';
 
 /**
  * BitTask Database
@@ -7,6 +7,8 @@ import type { Task, Attachment, OfflineOp, Settings } from '@/types';
  */
 class BitTaskDatabase extends Dexie {
   tasks!: EntityTable<Task, 'id'>;
+  boards!: EntityTable<Board, 'id'>;
+  subtasks!: EntityTable<Subtask, 'id'>;
   attachments!: EntityTable<Attachment, 'id'>;
   offlineOps!: EntityTable<OfflineOp, 'id'>;
   settings!: EntityTable<Settings, 'id'>;
@@ -26,6 +28,60 @@ class BitTaskDatabase extends Dexie {
       offlineOps: '++id, opId, opType, entity, entityId, timestamp, synced',
 
       // Settings (single row)
+      settings: '++id',
+    });
+
+    // Schema version 2 - Add sequentialId to tasks
+    this.version(2)
+      .stores({
+        tasks: '++id, sequentialId, title, completed, priority, createdAt, updatedAt',
+        attachments: '++id, taskId, type, createdAt',
+        offlineOps: '++id, opId, opType, entity, entityId, timestamp, synced',
+        settings: '++id',
+      })
+      .upgrade(async (tx) => {
+        // Migrate existing tasks: assign sequential IDs based on creation order
+        const tasks = await tx.table('tasks').orderBy('createdAt').toArray();
+        let nextSeqId = 1;
+        for (const task of tasks) {
+          await tx.table('tasks').update(task.id, { sequentialId: nextSeqId });
+          nextSeqId++;
+        }
+      });
+
+    // Schema version 3 - Add boards table and boardId to tasks
+    this.version(3)
+      .stores({
+        tasks: '++id, sequentialId, boardId, title, completed, priority, createdAt, updatedAt',
+        boards: '++id, name, order, createdAt',
+        attachments: '++id, taskId, type, createdAt',
+        offlineOps: '++id, opId, opType, entity, entityId, timestamp, synced',
+        settings: '++id',
+      })
+      .upgrade(async (tx) => {
+        // Create default board "Geral"
+        const now = new Date();
+        const defaultBoardId = await tx.table('boards').add({
+          name: 'Geral',
+          order: 0,
+          createdAt: now,
+          updatedAt: now,
+        });
+
+        // Assign all existing tasks to the default board
+        await tx
+          .table('tasks')
+          .toCollection()
+          .modify({ boardId: defaultBoardId });
+      });
+
+    // Schema version 4 - Add subtasks table
+    this.version(4).stores({
+      tasks: '++id, sequentialId, boardId, title, completed, priority, createdAt, updatedAt',
+      boards: '++id, name, order, createdAt',
+      subtasks: '++id, taskId, completed, order, createdAt',
+      attachments: '++id, taskId, type, createdAt',
+      offlineOps: '++id, opId, opType, entity, entityId, timestamp, synced',
       settings: '++id',
     });
   }

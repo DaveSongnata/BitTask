@@ -21,6 +21,7 @@ describe('useOfflineQueue', () => {
           priority: 'medium',
           tags: [],
           completed: false,
+          boardId: 1,
         });
       });
 
@@ -41,6 +42,7 @@ describe('useOfflineQueue', () => {
           priority: 'low',
           tags: [],
           completed: false,
+          boardId: 1,
         });
       });
 
@@ -63,6 +65,7 @@ describe('useOfflineQueue', () => {
           priority: 'high',
           tags: [],
           completed: false,
+          boardId: 1,
         });
       });
 

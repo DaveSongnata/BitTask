@@ -8,13 +8,23 @@ import { generateId } from '@/lib/utils';
  */
 
 /**
+ * Get the next sequential ID for a new task
+ */
+async function getNextSequentialId(): Promise<number> {
+  const lastTask = await db.tasks.orderBy('sequentialId').last();
+  return (lastTask?.sequentialId ?? 0) + 1;
+}
+
+/**
  * Create a new task
  */
 export async function createTask(input: TaskCreateInput): Promise<Task> {
   const now = new Date();
+  const sequentialId = await getNextSequentialId();
 
   const task: Omit<Task, 'id'> = {
     ...input,
+    sequentialId,
     createdAt: now,
     updatedAt: now,
   };
@@ -48,9 +58,15 @@ export async function getTasks(options?: {
   completed?: boolean;
   priority?: Task['priority'];
   search?: string;
+  boardId?: number;
 }): Promise<Task[]> {
   // Get all tasks ordered by createdAt descending
   let tasks = await db.tasks.orderBy('createdAt').reverse().toArray();
+
+  // Filter by board
+  if (options?.boardId !== undefined) {
+    tasks = tasks.filter((t) => t.boardId === options.boardId);
+  }
 
   // Filter by completed status (in memory to avoid IndexedDB boolean issues)
   if (options?.completed !== undefined) {
@@ -64,13 +80,23 @@ export async function getTasks(options?: {
 
   // Filter by search term
   if (options?.search) {
-    const searchLower = options.search.toLowerCase();
-    tasks = tasks.filter(
-      (t) =>
-        t.title.toLowerCase().includes(searchLower) ||
-        t.description?.toLowerCase().includes(searchLower) ||
-        t.tags.some((tag) => tag.toLowerCase().includes(searchLower))
-    );
+    const searchTerm = options.search.trim();
+    const searchLower = searchTerm.toLowerCase();
+
+    // Check if searching by sequential ID (e.g., "#42" or "42")
+    const seqIdMatch = searchTerm.match(/^#?(\d+)$/);
+    if (seqIdMatch?.[1]) {
+      const seqId = parseInt(seqIdMatch[1], 10);
+      tasks = tasks.filter((t) => t.sequentialId === seqId);
+    } else {
+      // Regular text search
+      tasks = tasks.filter(
+        (t) =>
+          t.title.toLowerCase().includes(searchLower) ||
+          t.description?.toLowerCase().includes(searchLower) ||
+          t.tags.some((tag) => tag.toLowerCase().includes(searchLower))
+      );
+    }
   }
 
   return tasks;

@@ -8,6 +8,7 @@ interface PixelCheckboxProps {
   className?: string;
   id?: string;
   name?: string;
+  size?: 'sm' | 'md';
 }
 
 /**
@@ -22,6 +23,7 @@ export function PixelCheckbox({
   className,
   id,
   name,
+  size = 'md',
 }: PixelCheckboxProps) {
   const checkboxId = id ?? name ?? `checkbox-${Math.random().toString(36).substring(7)}`;
 
@@ -44,9 +46,12 @@ export function PixelCheckbox({
           htmlFor={checkboxId}
           className={cn(
             // Custom checkbox appearance
-            'flex h-6 w-6 cursor-pointer items-center justify-center',
-            'border-4 border-pixel-border bg-pixel-surface',
+            'flex cursor-pointer items-center justify-center',
+            'border-pixel-border bg-pixel-surface',
             'transition-colors duration-100',
+
+            // Size variants
+            size === 'sm' ? 'h-4 w-4 border-2' : 'h-6 w-6 border-4',
 
             // Checked state
             'peer-checked:bg-pixel-primary',
@@ -63,8 +68,9 @@ export function PixelCheckbox({
           {/* Checkmark */}
           <svg
             className={cn(
-              'h-4 w-4 text-pixel-darkest',
+              'text-pixel-darkest',
               'transition-opacity duration-100',
+              size === 'sm' ? 'h-2.5 w-2.5' : 'h-4 w-4',
               checked ? 'opacity-100' : 'opacity-0'
             )}
             fill="none"

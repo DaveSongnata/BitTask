@@ -6,6 +6,7 @@
 export { TodoList } from './TodoList';
 export { TodoItem } from './TodoItem';
 export { TodoForm } from './TodoForm';
+export { SubtaskList } from './SubtaskList';
 export { AttachmentPreview } from './AttachmentPreview';
 export { CameraCapture } from './CameraCapture';
 export { AudioPlayer } from './AudioPlayer';

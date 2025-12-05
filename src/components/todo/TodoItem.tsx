@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { PixelCard, PixelCheckbox } from '@/components/ui';
-import { useTaskOperations, useTaskAttachments } from '@/hooks';
+import { useTaskOperations, useTaskAttachments, useSubtaskCounts } from '@/hooks';
 import { formatRelativeDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/types';
@@ -17,6 +17,7 @@ export function TodoItem({ task }: TodoItemProps) {
   const navigate = useNavigate();
   const { toggleComplete } = useTaskOperations();
   const attachments = useTaskAttachments(task.id);
+  const subtaskCounts = useSubtaskCounts(task.id);
 
   const handleToggle = async () => {
     if (task.id !== undefined) {
@@ -47,13 +48,14 @@ export function TodoItem({ task }: TodoItemProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          {/* Title */}
+          {/* Title with Sequential ID */}
           <h3
             className={cn(
               'font-pixel text-xs mb-1 truncate',
               task.completed && 'line-through text-pixel-text-muted'
             )}
           >
+            <span className="text-pixel-text-muted">#{task.sequentialId}</span>{' '}
             {task.title}
           </h3>
 
@@ -91,6 +93,20 @@ export function TodoItem({ task }: TodoItemProps) {
             {task.tags.length > 2 && (
               <span className="font-pixel text-[8px] text-pixel-text-muted">
                 +{task.tags.length - 2}
+              </span>
+            )}
+
+            {/* Subtask Progress */}
+            {subtaskCounts && subtaskCounts.total > 0 && (
+              <span className="inline-flex items-center gap-1 font-pixel text-[8px] text-pixel-text-muted">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="square"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                  />
+                </svg>
+                {subtaskCounts.completed}/{subtaskCounts.total}
               </span>
             )}
 

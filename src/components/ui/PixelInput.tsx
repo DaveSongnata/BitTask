@@ -17,6 +17,7 @@ export function PixelInput({
   id,
   required,
   maxLength,
+  onKeyDown,
 }: PixelInputProps) {
   return (
     <div className="w-full">
@@ -26,6 +27,7 @@ export function PixelInput({
         id={id}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
         disabled={disabled}
         required={required}

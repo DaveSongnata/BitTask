@@ -10,6 +10,12 @@ const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m
 const Attachments = lazy(() =>
   import('./pages/Attachments').then((m) => ({ default: m.Attachments }))
 );
+const BoardManager = lazy(() =>
+  import('./pages/BoardManager').then((m) => ({ default: m.BoardManager }))
+);
+const ShareTarget = lazy(() =>
+  import('./pages/ShareTarget').then((m) => ({ default: m.ShareTarget }))
+);
 
 function PageLoader() {
   return (
@@ -28,6 +34,8 @@ export function Router() {
         <Route path="/task/:id" element={<Editor />} />
         <Route path="/task/:id/attachments" element={<Attachments />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/boards" element={<BoardManager />} />
+        <Route path="/share-target" element={<ShareTarget />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

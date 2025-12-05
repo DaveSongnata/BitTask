@@ -14,6 +14,13 @@ export {
   useTaskOperations,
   useAttachmentOperations,
   useSettingsOperations,
+  useBoards,
+  useBoard,
+  useFirstBoard,
+  useBoardOperations,
+  useSubtasks,
+  useSubtaskCounts,
+  useSubtaskOperations,
 } from './useIndexedDB';
 export { usePendingOpsCount, usePendingOps, useOfflineQueueOperations } from './useOfflineQueue';
 export { usePWAStatus } from './usePWAStatus';

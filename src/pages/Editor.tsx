@@ -13,9 +13,10 @@ import {
   PixelLoader,
   PixelModal,
   PixelConfirmModal,
+  SpeechInput,
 } from '@/components/ui';
-import { AttachmentPreview, ImageViewer } from '@/components/todo';
-import { useTask, useTaskAttachments, useTaskOperations, useAttachmentOperations } from '@/hooks';
+import { AttachmentPreview, ImageViewer, SubtaskList } from '@/components/todo';
+import { useTask, useTaskAttachments, useTaskOperations, useAttachmentOperations, useBoards } from '@/hooks';
 import { cn } from '@/lib/utils';
 import type { TaskPriority, Attachment } from '@/types';
 
@@ -33,6 +34,7 @@ export function Editor() {
   const attachments = useTaskAttachments(taskId);
   const { updateTask, deleteTask, toggleComplete } = useTaskOperations();
   const { deleteAttachment } = useAttachmentOperations();
+  const boards = useBoards();
 
   // Local edit state
   const [title, setTitle] = useState('');
@@ -48,6 +50,9 @@ export function Editor() {
   const [showDeleteAttachmentModal, setShowDeleteAttachmentModal] = useState(false);
   const [attachmentToDelete, setAttachmentToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Transfer board modal state
+  const [showTransferModal, setShowTransferModal] = useState(false);
 
   // Initialize form when task loads
   useEffect(() => {
@@ -91,9 +96,10 @@ export function Editor() {
 
   const handleConfirmDeleteTask = async () => {
     setIsDeleting(true);
+    const boardId = task.boardId;
     try {
       await deleteTask(taskId);
-      void navigate('/home', { replace: true });
+      void navigate(`/home?board=${boardId}`, { replace: true });
     } finally {
       setIsDeleting(false);
       setShowDeleteTaskModal(false);
@@ -129,17 +135,25 @@ export function Editor() {
     }
   };
 
+  const handleTransferBoard = async (newBoardId: number) => {
+    await updateTask(taskId, { boardId: newBoardId });
+    setShowTransferModal(false);
+  };
+
+  // Get current board name
+  const currentBoard = boards?.find((b) => b.id === task.boardId);
+
   return (
     <div className="flex flex-col h-full overflow-x-hidden">
       {/* Header */}
       <PixelToolbar position="top">
         <PixelToolbarGroup className="min-w-0 flex-1">
-          <PixelButton size="sm" variant="ghost" onClick={() => navigate('/home')}>
+          <PixelButton size="sm" variant="ghost" onClick={() => navigate(`/home?board=${task.boardId}`)}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="square" strokeWidth={3} d="M15 19l-7-7 7-7" />
             </svg>
           </PixelButton>
-          <PixelToolbarTitle>{t('home.title')}</PixelToolbarTitle>
+          <PixelToolbarTitle>#{task.sequentialId}</PixelToolbarTitle>
         </PixelToolbarGroup>
         <PixelToolbarGroup className="flex-shrink-0">
           {isEditing ? (
@@ -192,12 +206,11 @@ export function Editor() {
                   <label className="block font-pixel text-[10px] text-pixel-text-muted mb-2">
                     {t('task.description')}
                   </label>
-                  <textarea
+                  <SpeechInput
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={setDescription}
                     placeholder={t('task.descriptionPlaceholder')}
                     rows={4}
-                    className="pixel-input w-full resize-none"
                   />
                 </div>
               </>
@@ -291,6 +304,30 @@ export function Editor() {
           </PixelCardBody>
         </PixelCard>
 
+        {/* Subtasks */}
+        <PixelCard>
+          <PixelCardBody>
+            <SubtaskList taskId={taskId} editable={!task.completed} />
+          </PixelCardBody>
+        </PixelCard>
+
+        {/* Board */}
+        <PixelCard>
+          <PixelCardBody>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="block font-pixel text-[10px] text-pixel-text-muted mb-1">
+                  {t('boards.title')}
+                </label>
+                <span className="font-pixel text-[10px]">{currentBoard?.name ?? '...'}</span>
+              </div>
+              <PixelButton size="sm" variant="secondary" onClick={() => setShowTransferModal(true)}>
+                {t('boards.transfer')}
+              </PixelButton>
+            </div>
+          </PixelCardBody>
+        </PixelCard>
+
         {/* Attachments */}
         <PixelCard>
           <PixelCardBody>
@@ -369,6 +406,38 @@ export function Editor() {
         variant="danger"
         loading={isDeleting}
       />
+
+      {/* Transfer Board Modal */}
+      <PixelModal
+        open={showTransferModal}
+        onClose={() => setShowTransferModal(false)}
+        title={t('boards.transfer')}
+      >
+        <p className="font-pixel text-[10px] text-pixel-text-muted mb-4">
+          {t('boards.selectBoard')}
+        </p>
+        <div className="space-y-2">
+          {boards?.map((board) => (
+            <button
+              key={board.id}
+              onClick={() => void handleTransferBoard(board.id!)}
+              disabled={board.id === task.boardId}
+              className={cn(
+                'w-full text-left px-3 py-2 font-pixel text-[10px]',
+                'border-2 border-pixel-border',
+                board.id === task.boardId
+                  ? 'bg-pixel-surface-alt text-pixel-text-muted cursor-not-allowed'
+                  : 'bg-pixel-surface hover:bg-pixel-primary hover:text-pixel-darkest'
+              )}
+            >
+              {board.name}
+              {board.id === task.boardId && (
+                <span className="ml-2 text-[8px]">({t('common.current')})</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </PixelModal>
     </div>
   );
 }

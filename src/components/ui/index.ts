@@ -14,3 +14,4 @@ export { PixelToolbar, PixelToolbarGroup, PixelToolbarTitle } from './PixelToolb
 export { PixelWindow } from './PixelWindow';
 export { SafeAreaContainer } from './SafeAreaContainer';
 export { LanguageSelector } from './LanguageSelector';
+export { SpeechInput, isSpeechSupported } from './SpeechInput';

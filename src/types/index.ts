@@ -4,6 +4,21 @@
  */
 
 // ============================================
+// Board Types
+// ============================================
+
+export interface Board {
+  id?: number;
+  name: string;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type BoardCreateInput = Omit<Board, 'id' | 'createdAt' | 'updatedAt'>;
+export type BoardUpdateInput = Partial<Omit<Board, 'id' | 'createdAt'>>;
+
+// ============================================
 // Task Types
 // ============================================
 
@@ -11,6 +26,8 @@ export type TaskPriority = 'low' | 'medium' | 'high';
 
 export interface Task {
   id?: number;
+  sequentialId: number; // Auto-generated sequential ID for citation (#42)
+  boardId: number; // Every task belongs to a board
   title: string;
   description?: string;
   tags: string[];
@@ -20,8 +37,25 @@ export interface Task {
   updatedAt: Date;
 }
 
-export type TaskCreateInput = Omit<Task, 'id' | 'createdAt' | 'updatedAt'>;
-export type TaskUpdateInput = Partial<Omit<Task, 'id' | 'createdAt'>>;
+export type TaskCreateInput = Omit<Task, 'id' | 'sequentialId' | 'createdAt' | 'updatedAt'>;
+export type TaskUpdateInput = Partial<Omit<Task, 'id' | 'sequentialId' | 'createdAt'>>;
+
+// ============================================
+// Subtask Types
+// ============================================
+
+export interface Subtask {
+  id?: number;
+  taskId: number;
+  title: string;
+  completed: boolean;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type SubtaskCreateInput = Omit<Subtask, 'id' | 'createdAt' | 'updatedAt'>;
+export type SubtaskUpdateInput = Partial<Omit<Subtask, 'id' | 'taskId' | 'createdAt'>>;
 
 // ============================================
 // Attachment Types
@@ -133,6 +167,7 @@ export interface PixelInputProps {
   id?: string;
   required?: boolean;
   maxLength?: number;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export interface PixelModalProps {

@@ -31,6 +31,7 @@ describe('useIndexedDB', () => {
           priority: 'medium',
           tags: ['test'],
           completed: false,
+          boardId: 1,
         });
       });
 
@@ -49,6 +50,7 @@ describe('useIndexedDB', () => {
           priority: 'low',
           tags: [],
           completed: false,
+          boardId: 1,
         });
       });
 
@@ -71,6 +73,7 @@ describe('useIndexedDB', () => {
           priority: 'medium',
           tags: [],
           completed: false,
+          boardId: 1,
         });
       });
 
@@ -93,6 +96,7 @@ describe('useIndexedDB', () => {
           priority: 'high',
           tags: [],
           completed: false,
+          boardId: 1,
         });
       });
 

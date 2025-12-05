@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PixelModal, PixelButton, PixelInput } from '@/components/ui';
+import { PixelModal, PixelButton, PixelInput, SpeechInput } from '@/components/ui';
 import { useTaskOperations } from '@/hooks';
 import { cn } from '@/lib/utils';
 import type { TaskPriority } from '@/types';
@@ -9,13 +9,14 @@ import type { TaskPriority } from '@/types';
 interface TodoFormProps {
   open: boolean;
   onClose: () => void;
+  boardId: number; // Board where the task will be created
 }
 
 /**
  * TodoForm
  * Modal form for creating a new task
  */
-export function TodoForm({ open, onClose }: TodoFormProps) {
+export function TodoForm({ open, onClose, boardId }: TodoFormProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { createTask } = useTaskOperations();
@@ -61,6 +62,7 @@ export function TodoForm({ open, onClose }: TodoFormProps) {
           .map((t) => t.trim())
           .filter(Boolean),
         completed: false,
+        boardId,
       });
 
       handleClose();
@@ -105,13 +107,12 @@ export function TodoForm({ open, onClose }: TodoFormProps) {
           <label className="block font-pixel text-[10px] text-pixel-text-muted mb-1">
             {t('task.description')}
           </label>
-          <textarea
+          <SpeechInput
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={setDescription}
             placeholder={t('task.descriptionPlaceholder')}
             rows={2}
             maxLength={500}
-            className="pixel-input w-full resize-none"
           />
         </div>
 

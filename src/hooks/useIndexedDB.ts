@@ -2,7 +2,21 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db, initializeDatabase } from '@/services/idb';
 import * as taskService from '@/services/taskService';
 import * as fileService from '@/services/fileService';
-import type { Task, TaskCreateInput, TaskUpdateInput, Attachment, Settings } from '@/types';
+import * as boardService from '@/services/boardService';
+import * as subtaskService from '@/services/subtaskService';
+import type {
+  Task,
+  TaskCreateInput,
+  TaskUpdateInput,
+  Attachment,
+  Settings,
+  Board,
+  BoardCreateInput,
+  BoardUpdateInput,
+  Subtask,
+  SubtaskCreateInput,
+  SubtaskUpdateInput,
+} from '@/types';
 import { useEffect, useState } from 'react';
 
 /**
@@ -34,10 +48,11 @@ export function useTasks(options?: {
   completed?: boolean;
   priority?: Task['priority'];
   search?: string;
+  boardId?: number;
 }): Task[] | undefined {
   return useLiveQuery(
     () => taskService.getTasks(options),
-    [options?.completed, options?.priority, options?.search]
+    [options?.completed, options?.priority, options?.search, options?.boardId]
   );
 }
 
@@ -136,6 +151,112 @@ export function useSettingsOperations() {
       if (current?.id !== undefined) {
         await db.settings.update(current.id, updates);
       }
+    },
+  };
+}
+
+// ============================================
+// Board Hooks
+// ============================================
+
+/**
+ * Get all boards with live updates
+ */
+export function useBoards(): Board[] | undefined {
+  return useLiveQuery(() => boardService.getAllBoards());
+}
+
+/**
+ * Get a single board with live updates
+ */
+export function useBoard(id: number | undefined): Board | undefined {
+  return useLiveQuery(() => (id ? boardService.getBoard(id) : undefined), [id]);
+}
+
+/**
+ * Get the first board (for default selection)
+ */
+export function useFirstBoard(): Board | undefined {
+  return useLiveQuery(() => boardService.getFirstBoard());
+}
+
+/**
+ * Board operations hook
+ */
+export function useBoardOperations() {
+  return {
+    createBoard: async (input: BoardCreateInput): Promise<Board> => {
+      return boardService.createBoard(input);
+    },
+
+    updateBoard: async (id: number, updates: BoardUpdateInput): Promise<Board | undefined> => {
+      return boardService.updateBoard(id, updates);
+    },
+
+    deleteBoard: async (id: number): Promise<boolean> => {
+      return boardService.deleteBoard(id);
+    },
+
+    reorderBoards: async (orderedIds: number[]): Promise<void> => {
+      return boardService.reorderBoards(orderedIds);
+    },
+
+    ensureDefaultBoard: async (): Promise<Board> => {
+      return boardService.ensureDefaultBoard();
+    },
+  };
+}
+
+// ============================================
+// Subtask Hooks
+// ============================================
+
+/**
+ * Get all subtasks for a task with live updates
+ */
+export function useSubtasks(taskId: number | undefined): Subtask[] | undefined {
+  return useLiveQuery(
+    () => (taskId ? subtaskService.getSubtasksByTaskId(taskId) : []),
+    [taskId]
+  );
+}
+
+/**
+ * Get subtask counts for a task with live updates
+ */
+export function useSubtaskCounts(
+  taskId: number | undefined
+): { total: number; completed: number } | undefined {
+  return useLiveQuery(
+    () => (taskId ? subtaskService.getSubtaskCounts(taskId) : { total: 0, completed: 0 }),
+    [taskId]
+  );
+}
+
+/**
+ * Subtask operations hook
+ */
+export function useSubtaskOperations() {
+  return {
+    createSubtask: async (input: Omit<SubtaskCreateInput, 'order'>): Promise<Subtask> => {
+      const order = await subtaskService.getNextSubtaskOrder(input.taskId);
+      return subtaskService.createSubtask({ ...input, order });
+    },
+
+    updateSubtask: async (id: number, updates: SubtaskUpdateInput): Promise<Subtask | undefined> => {
+      return subtaskService.updateSubtask(id, updates);
+    },
+
+    deleteSubtask: async (id: number): Promise<boolean> => {
+      return subtaskService.deleteSubtask(id);
+    },
+
+    toggleComplete: async (id: number): Promise<Subtask | undefined> => {
+      return subtaskService.toggleSubtaskComplete(id);
+    },
+
+    reorderSubtasks: async (taskId: number, subtaskIds: number[]): Promise<void> => {
+      return subtaskService.reorderSubtasks(taskId, subtaskIds);
     },
   };
 }
