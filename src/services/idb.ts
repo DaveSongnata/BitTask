@@ -100,7 +100,7 @@ export async function initializeDatabase(): Promise<void> {
     await db.settings.add({
       theme: 'slso8',
       mode: 'system',
-      maxFileSize: 20 * 1024 * 1024, // 20MB
+      maxFileSize: 1024 * 1024 * 1024, // 1GB
       showWelcome: true,
       compressImages: true,
       imageQuality: 0.8,
