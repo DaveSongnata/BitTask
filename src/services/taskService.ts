@@ -154,13 +154,20 @@ export async function deleteTask(id: number): Promise<boolean> {
 
 /**
  * Get task count by completion status
+ * Optionally filtered by boardId
  */
-export async function getTaskCounts(): Promise<{
+export async function getTaskCounts(boardId?: number): Promise<{
   total: number;
   completed: number;
   pending: number;
 }> {
-  const all = await db.tasks.toArray();
+  let query = db.tasks.toCollection();
+
+  if (boardId !== undefined) {
+    query = db.tasks.where('boardId').equals(boardId);
+  }
+
+  const all = await query.toArray();
   const completed = all.filter((t) => t.completed).length;
 
   return {

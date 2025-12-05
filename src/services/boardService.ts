@@ -130,15 +130,39 @@ export async function reorderBoards(orderedIds: number[]): Promise<void> {
   });
 }
 
+// Lock to prevent multiple simultaneous board creations
+let ensureDefaultBoardPromise: Promise<Board> | null = null;
+
 /**
  * Ensure at least one board exists (create default if needed)
+ * Uses a lock to prevent race conditions creating multiple boards
  */
 export async function ensureDefaultBoard(): Promise<Board> {
-  const existingBoard = await db.boards.orderBy('order').first();
-  if (existingBoard) {
-    return existingBoard;
+  // If there's already an in-flight request, wait for it
+  if (ensureDefaultBoardPromise) {
+    return ensureDefaultBoardPromise;
   }
 
-  // Create default board
-  return createBoard({ name: 'Geral', order: 0 });
+  ensureDefaultBoardPromise = db.transaction('rw', db.boards, async () => {
+    const existingBoard = await db.boards.orderBy('order').first();
+    if (existingBoard) {
+      return existingBoard;
+    }
+
+    // Create default board inside transaction
+    const now = new Date();
+    const board: Omit<Board, 'id'> = {
+      name: 'Geral',
+      order: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const id = (await db.boards.add(board as Board)) as number;
+    return { ...board, id };
+  }).finally(() => {
+    ensureDefaultBoardPromise = null;
+  });
+
+  return ensureDefaultBoardPromise;
 }

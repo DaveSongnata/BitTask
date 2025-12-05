@@ -15,7 +15,7 @@ import {
   PixelConfirmModal,
   SpeechInput,
 } from '@/components/ui';
-import { AttachmentPreview, ImageViewer, SubtaskList, PdfViewer } from '@/components/todo';
+import { AttachmentPreview, ImageViewer, SubtaskList } from '@/components/todo';
 import { useTask, useTaskAttachments, useTaskOperations, useAttachmentOperations, useBoards } from '@/hooks';
 import { cn } from '@/lib/utils';
 import type { TaskPriority, Attachment } from '@/types';
@@ -128,8 +128,14 @@ export function Editor() {
   };
 
   const handleViewAttachment = (attachment: Attachment) => {
-    if (attachment.type === 'image' || attachment.type === 'pdf') {
+    if (attachment.type === 'image') {
       setViewingAttachment(attachment);
+    } else if (attachment.type === 'pdf' && attachment.blob) {
+      // Open PDF directly in device's viewer
+      const blobUrl = URL.createObjectURL(attachment.blob);
+      window.open(blobUrl, '_blank');
+      // Clean up blob URL after a delay
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
     } else if (attachment.type === 'link' && attachment.url) {
       window.open(attachment.url, '_blank', 'noopener,noreferrer');
     }
@@ -365,24 +371,18 @@ export function Editor() {
         </div>
       </div>
 
-      {/* Attachment Viewer Modal */}
-      {viewingAttachment && (
+      {/* Image Viewer Modal (PDFs open directly in browser) */}
+      {viewingAttachment && viewingAttachment.type === 'image' && (
         <PixelModal
           open={!!viewingAttachment}
           onClose={() => setViewingAttachment(null)}
           title={viewingAttachment.filename}
           className="max-w-4xl"
         >
-          {viewingAttachment.type === 'image' ? (
-            <ImageViewer
-              attachment={viewingAttachment}
-              onClose={() => setViewingAttachment(null)}
-            />
-          ) : viewingAttachment.type === 'pdf' ? (
-            <div className="h-[70vh]">
-              <PdfViewer attachment={viewingAttachment} />
-            </div>
-          ) : null}
+          <ImageViewer
+            attachment={viewingAttachment}
+            onClose={() => setViewingAttachment(null)}
+          />
         </PixelModal>
       )}
 

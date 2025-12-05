@@ -20,10 +20,13 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
+  // Use portrait-friendly constraints for mobile
+  // Let browser pick best resolution, prefer portrait aspect ratio
   const videoConstraints = {
-    width: 1280,
-    height: 720,
     facingMode,
+    aspectRatio: { ideal: 3 / 4 }, // Portrait-friendly (4:3 rotated)
+    width: { ideal: 1080 },
+    height: { ideal: 1920 },
   };
 
   const handleUserMedia = useCallback(() => {
@@ -44,11 +47,8 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
 
     setIsCapturing(true);
 
-    // Get screenshot as WebP data URL
-    const imageSrc = webcam.getScreenshot({
-      width: 1280,
-      height: 720,
-    });
+    // Get screenshot as WebP data URL (no fixed dimensions - use camera's native resolution)
+    const imageSrc = webcam.getScreenshot();
 
     if (imageSrc) {
       setCapturedImage(imageSrc);

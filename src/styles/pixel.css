@@ -270,6 +270,7 @@ body {
   display: inline-flex;
   align-items: center;
   padding: 4px 8px;
+  font-family: var(--font-pixel);
   font-size: 10px;
   text-transform: uppercase;
   background-color: var(--pixel-surface-alt);

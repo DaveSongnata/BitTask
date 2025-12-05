@@ -82,7 +82,7 @@ export function Home() {
     completed: filter === 'all' ? undefined : filter === 'completed',
     boardId: currentBoardId ?? undefined,
   });
-  const counts = useTaskCounts();
+  const counts = useTaskCounts(currentBoardId ?? undefined);
 
   // Get current board name
   const currentBoard = boards?.find((b) => b.id === currentBoardId);

@@ -65,9 +65,10 @@ export function useTask(id: number | undefined): Task | undefined {
 
 /**
  * Get task counts with live updates
+ * Optionally filtered by boardId
  */
-export function useTaskCounts(): { total: number; completed: number; pending: number } | undefined {
-  return useLiveQuery(() => taskService.getTaskCounts());
+export function useTaskCounts(boardId?: number): { total: number; completed: number; pending: number } | undefined {
+  return useLiveQuery(() => taskService.getTaskCounts(boardId), [boardId]);
 }
 
 /**

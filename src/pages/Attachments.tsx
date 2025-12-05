@@ -193,7 +193,7 @@ export function Attachments() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*,audio/*,.pdf"
+                accept="application/pdf,audio/*,image/*"
                 multiple
                 onChange={(e) => void handleFileSelect(e.target.files)}
                 className="hidden"
