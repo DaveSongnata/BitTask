@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   PixelButton,
   PixelToolbar,
@@ -10,17 +11,19 @@ import {
   PixelLoader,
   PixelInput,
   PixelModal,
+  PixelConfirmModal,
 } from '@/components/ui';
-import { AttachmentPreview } from '@/components/todo/AttachmentPreview';
-import { CameraCapture } from '@/components/todo/CameraCapture';
+import { AttachmentPreview, CameraCapture, ImageViewer } from '@/components/todo';
 import { useTask, useTaskAttachments, useAttachmentOperations, useSettings } from '@/hooks';
 import { isValidUrl } from '@/lib/utils';
+import type { Attachment } from '@/types';
 
 /**
  * Attachments Page
  * Manage attachments for a task - upload, camera capture, link adding
  */
 export function Attachments() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const taskId = id ? parseInt(id, 10) : undefined;
@@ -37,6 +40,12 @@ export function Attachments() {
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [viewingImage, setViewingImage] = useState<Attachment | null>(null);
+
+  // Confirmation modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [attachmentToDelete, setAttachmentToDelete] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   if (!taskId || task === undefined) {
     return (
@@ -56,7 +65,7 @@ export function Attachments() {
       for (const file of Array.from(files)) {
         const validation = validateFile(file, settings?.maxFileSize);
         if (!validation.valid) {
-          setError(validation.error ?? 'Invalid file');
+          setError(validation.error ?? t('attachments.invalidType'));
           continue;
         }
 
@@ -93,7 +102,7 @@ export function Attachments() {
     if (!taskId || !linkUrl) return;
 
     if (!isValidUrl(linkUrl)) {
-      setError('Please enter a valid URL');
+      setError(t('attachments.invalidType'));
       return;
     }
 
@@ -111,14 +120,33 @@ export function Attachments() {
     }
   };
 
-  const handleDeleteAttachment = async (attachmentId: number) => {
-    if (window.confirm('Delete this attachment?')) {
-      await deleteAttachment(attachmentId);
+  const handleDeleteAttachmentClick = (attachmentId: number) => {
+    setAttachmentToDelete(attachmentId);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (attachmentToDelete === null) return;
+    setIsDeleting(true);
+    try {
+      await deleteAttachment(attachmentToDelete);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+      setAttachmentToDelete(null);
+    }
+  };
+
+  const handleViewAttachment = (attachment: Attachment) => {
+    if (attachment.type === 'image') {
+      setViewingImage(attachment);
+    } else if (attachment.type === 'link' && attachment.url) {
+      window.open(attachment.url, '_blank', 'noopener,noreferrer');
     }
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-x-hidden">
       {/* Header */}
       <PixelToolbar position="top">
         <PixelToolbarGroup>
@@ -127,12 +155,12 @@ export function Attachments() {
               <path strokeLinecap="square" strokeWidth={3} d="M15 19l-7-7 7-7" />
             </svg>
           </PixelButton>
-          <PixelToolbarTitle>Attachments</PixelToolbarTitle>
+          <PixelToolbarTitle>{t('attachments.title')}</PixelToolbarTitle>
         </PixelToolbarGroup>
       </PixelToolbar>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto pixel-scrollbar p-4 space-y-4">
+      <div className="flex-1 overflow-x-hidden overflow-y-auto pixel-scrollbar p-4 space-y-4">
         {/* Error Message */}
         {error && (
           <div className="p-3 bg-[var(--pixel-error)] text-white font-pixel text-[10px] border-4 border-pixel-border">
@@ -141,7 +169,7 @@ export function Attachments() {
               onClick={() => setError(null)}
               className="ml-2 underline"
             >
-              Dismiss
+              {t('common.close')}
             </button>
           </div>
         )}
@@ -149,7 +177,7 @@ export function Attachments() {
         {/* Upload Options */}
         <PixelCard>
           <PixelCardBody>
-            <h3 className="font-pixel text-xs mb-4">Add Attachment</h3>
+            <h3 className="font-pixel text-xs mb-4">{t('task.addAttachment')}</h3>
             <div className="grid grid-cols-3 gap-2">
               {/* File Upload */}
               <button
@@ -160,7 +188,7 @@ export function Attachments() {
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="square" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span className="font-pixel text-[8px]">File</span>
+                <span className="font-pixel text-[8px]">{t('attachments.addFile')}</span>
               </button>
               <input
                 ref={fileInputRef}
@@ -181,7 +209,7 @@ export function Attachments() {
                   <path strokeLinecap="square" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                   <path strokeLinecap="square" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span className="font-pixel text-[8px]">Camera</span>
+                <span className="font-pixel text-[8px]">{t('attachments.takePhoto')}</span>
               </button>
 
               {/* Link */}
@@ -193,14 +221,14 @@ export function Attachments() {
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="square" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                 </svg>
-                <span className="font-pixel text-[8px]">Link</span>
+                <span className="font-pixel text-[8px]">{t('attachments.addLink')}</span>
               </button>
             </div>
 
             {isUploading && (
               <div className="mt-4 flex items-center justify-center gap-2">
                 <PixelLoader size="sm" />
-                <span className="font-pixel text-[10px] text-pixel-text-muted">Uploading...</span>
+                <span className="font-pixel text-[10px] text-pixel-text-muted">{t('common.loading')}</span>
               </div>
             )}
           </PixelCardBody>
@@ -210,7 +238,7 @@ export function Attachments() {
         <PixelCard>
           <PixelCardBody>
             <h3 className="font-pixel text-xs mb-4">
-              Files ({attachments?.length ?? 0})
+              {t('attachments.title')} ({attachments?.length ?? 0})
             </h3>
             {attachments && attachments.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
@@ -218,14 +246,15 @@ export function Attachments() {
                   <AttachmentPreview
                     key={attachment.id}
                     attachment={attachment}
-                    onDelete={() => void handleDeleteAttachment(attachment.id!)}
+                    onClick={() => handleViewAttachment(attachment)}
+                    onDelete={() => handleDeleteAttachmentClick(attachment.id!)}
                     showDetails
                   />
                 ))}
               </div>
             ) : (
               <p className="font-pixel text-[10px] text-pixel-text-muted text-center py-8">
-                No attachments yet
+                {t('task.noAttachments')}
               </p>
             )}
           </PixelCardBody>
@@ -244,13 +273,13 @@ export function Attachments() {
       <PixelModal
         open={showLinkModal}
         onClose={() => setShowLinkModal(false)}
-        title="Add Link"
+        title={t('attachments.addLink')}
       >
         <div className="space-y-4">
           <PixelInput
             value={linkUrl}
             onChange={setLinkUrl}
-            placeholder="https://example.com"
+            placeholder={t('attachments.linkPlaceholder')}
             type="url"
           />
           <div className="flex gap-2">
@@ -259,18 +288,48 @@ export function Attachments() {
               onClick={() => setShowLinkModal(false)}
               className="flex-1"
             >
-              Cancel
+              {t('common.cancel')}
             </PixelButton>
             <PixelButton
               onClick={() => void handleAddLink()}
               className="flex-1"
               disabled={!linkUrl}
             >
-              Add Link
+              {t('attachments.addLinkButton')}
             </PixelButton>
           </div>
         </div>
       </PixelModal>
+
+      {/* Image Viewer Modal */}
+      {viewingImage && (
+        <PixelModal
+          open={!!viewingImage}
+          onClose={() => setViewingImage(null)}
+          title={viewingImage.filename}
+          className="max-w-4xl"
+        >
+          <ImageViewer
+            attachment={viewingImage}
+            onClose={() => setViewingImage(null)}
+          />
+        </PixelModal>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <PixelConfirmModal
+        open={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setAttachmentToDelete(null);
+        }}
+        onConfirm={() => void handleConfirmDelete()}
+        title={t('task.deleteAttachment')}
+        message={t('task.deleteAttachmentConfirm')}
+        confirmText={t('common.delete')}
+        variant="danger"
+        loading={isDeleting}
+      />
     </div>
   );
 }

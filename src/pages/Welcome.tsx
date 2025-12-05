@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PixelButton } from '@/components/ui';
 import { useSettings, useSettingsOperations } from '@/hooks';
 import { cn } from '@/lib/utils';
@@ -10,6 +11,7 @@ import { cn } from '@/lib/utils';
  * Shows on first visit, can be skipped
  */
 export function Welcome() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const settings = useSettings();
   const { updateSettings } = useSettingsOperations();
@@ -48,11 +50,11 @@ export function Welcome() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-8 p-8 bg-pixel-bg">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-8 p-8 bg-pixel-bg overflow-x-hidden">
       {/* Logo/Title */}
       <div className="text-center">
-        <h1 className="font-pixel text-2xl text-pixel-text mb-2">BitTask</h1>
-        <p className="font-pixel text-xs text-pixel-text-muted">Pixel Todo</p>
+        <h1 className="font-pixel text-2xl text-pixel-text mb-2">{t('welcome.title')}</h1>
+        <p className="font-pixel text-xs text-pixel-text-muted">{t('welcome.subtitle')}</p>
       </div>
 
       {/* Animated Character */}
@@ -85,7 +87,7 @@ export function Welcome() {
 
       {/* Start Button */}
       <PixelButton onClick={handleStart} size="lg" className="min-w-[200px]">
-        Start
+        {t('welcome.start')}
       </PixelButton>
 
       {/* Skip Option */}
@@ -99,13 +101,13 @@ export function Welcome() {
           onClick={handleSkipForever}
           className="font-pixel text-[10px] text-pixel-text-muted underline hover:text-pixel-text"
         >
-          Don't show again
+          {t('welcome.skipForever')}
         </button>
       </div>
 
       {/* Version */}
       <p className="absolute bottom-4 font-pixel text-[8px] text-pixel-text-muted">
-        v1.0.0 - Offline Ready
+        {t('welcome.version')}
       </p>
     </div>
   );

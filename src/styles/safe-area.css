@@ -26,10 +26,12 @@
 .safe-area-container {
   min-height: 100vh;
   min-height: 100dvh; /* Dynamic viewport height for mobile */
+  max-width: 100vw;
   padding-top: var(--sat);
   padding-bottom: var(--sab);
   padding-left: var(--sal);
   padding-right: var(--sar);
+  overflow-x: hidden;
 }
 
 /* For fixed headers */
@@ -110,7 +112,9 @@
     /* Fix for iOS rubber-banding */
     position: fixed;
     width: 100%;
+    max-width: 100vw;
     height: 100%;
+    overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }

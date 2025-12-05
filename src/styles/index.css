@@ -1,9 +1,4 @@
-/* Main CSS entry point */
+/* Main Tailwind CSS entry point */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import theme and pixel styles */
-@import './theme.css';
-@import './pixel.css';
-@import './safe-area.css';

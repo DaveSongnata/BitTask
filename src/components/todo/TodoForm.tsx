@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PixelModal, PixelButton, PixelInput } from '@/components/ui';
 import { useTaskOperations } from '@/hooks';
 import { cn } from '@/lib/utils';
@@ -15,6 +16,7 @@ interface TodoFormProps {
  * Modal form for creating a new task
  */
 export function TodoForm({ open, onClose }: TodoFormProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { createTask } = useTaskOperations();
 
@@ -42,7 +44,7 @@ export function TodoForm({ open, onClose }: TodoFormProps) {
     e.preventDefault();
 
     if (!title.trim()) {
-      setError('Title is required');
+      setError(t('task.titleRequired'));
       return;
     }
 
@@ -68,15 +70,15 @@ export function TodoForm({ open, onClose }: TodoFormProps) {
         void navigate(`/task/${task.id}`);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create task');
+      setError(err instanceof Error ? err.message : t('errors.failedToCreate'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <PixelModal open={open} onClose={handleClose} title="New Task">
-      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+    <PixelModal open={open} onClose={handleClose} title={t('home.newTask')}>
+      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
         {/* Error */}
         {error && (
           <div className="p-2 bg-[var(--pixel-error)] text-white font-pixel text-[10px] border-2 border-pixel-border">
@@ -86,13 +88,13 @@ export function TodoForm({ open, onClose }: TodoFormProps) {
 
         {/* Title */}
         <div>
-          <label className="block font-pixel text-[10px] text-pixel-text-muted mb-2">
-            Title *
+          <label className="block font-pixel text-[10px] text-pixel-text-muted mb-1">
+            {t('task.title')} *
           </label>
           <PixelInput
             value={title}
             onChange={setTitle}
-            placeholder="What needs to be done?"
+            placeholder={t('task.titlePlaceholder')}
             required
             maxLength={100}
           />
@@ -100,14 +102,14 @@ export function TodoForm({ open, onClose }: TodoFormProps) {
 
         {/* Description */}
         <div>
-          <label className="block font-pixel text-[10px] text-pixel-text-muted mb-2">
-            Description
+          <label className="block font-pixel text-[10px] text-pixel-text-muted mb-1">
+            {t('task.description')}
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add details..."
-            rows={3}
+            placeholder={t('task.descriptionPlaceholder')}
+            rows={2}
             maxLength={500}
             className="pixel-input w-full resize-none"
           />
@@ -115,17 +117,17 @@ export function TodoForm({ open, onClose }: TodoFormProps) {
 
         {/* Priority */}
         <div>
-          <label className="block font-pixel text-[10px] text-pixel-text-muted mb-2">
-            Priority
+          <label className="block font-pixel text-[10px] text-pixel-text-muted mb-1">
+            {t('task.priority')}
           </label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-hidden">
             {(['low', 'medium', 'high'] as const).map((p) => (
               <button
                 key={p}
                 type="button"
                 onClick={() => setPriority(p)}
                 className={cn(
-                  'flex-1 py-2 font-pixel text-[10px] uppercase',
+                  'flex-1 min-w-0 py-2 font-pixel text-[10px] uppercase truncate',
                   'border-4 border-pixel-border transition-colors',
                   priority === p
                     ? p === 'low'
@@ -136,7 +138,7 @@ export function TodoForm({ open, onClose }: TodoFormProps) {
                     : 'bg-pixel-surface hover:bg-pixel-surface-alt'
                 )}
               >
-                {p}
+                {t(`task.priority${p.charAt(0).toUpperCase() + p.slice(1)}`)}
               </button>
             ))}
           </div>
@@ -144,18 +146,18 @@ export function TodoForm({ open, onClose }: TodoFormProps) {
 
         {/* Tags */}
         <div>
-          <label className="block font-pixel text-[10px] text-pixel-text-muted mb-2">
-            Tags (comma separated)
+          <label className="block font-pixel text-[10px] text-pixel-text-muted mb-1">
+            {t('task.tags')}
           </label>
           <PixelInput
             value={tags}
             onChange={setTags}
-            placeholder="work, urgent, personal"
+            placeholder={t('task.tagsPlaceholder')}
           />
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-2">
           <PixelButton
             type="button"
             variant="secondary"
@@ -163,7 +165,7 @@ export function TodoForm({ open, onClose }: TodoFormProps) {
             className="flex-1"
             disabled={isSubmitting}
           >
-            Cancel
+            {t('common.cancel')}
           </PixelButton>
           <PixelButton
             type="submit"
@@ -171,7 +173,7 @@ export function TodoForm({ open, onClose }: TodoFormProps) {
             loading={isSubmitting}
             disabled={!title.trim()}
           >
-            Create
+            {t('common.add')}
           </PixelButton>
         </div>
       </form>

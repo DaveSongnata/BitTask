@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   PixelButton,
   PixelToolbar,
@@ -17,6 +18,7 @@ import { cn } from '@/lib/utils';
  * Main todo list view with filtering and task creation
  */
 export function Home() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const dbReady = useInitDatabase();
@@ -32,6 +34,12 @@ export function Home() {
   });
   const counts = useTaskCounts();
 
+  const filterLabels = {
+    all: t('home.filterAll'),
+    pending: t('home.pending'),
+    completed: t('home.filterCompleted'),
+  };
+
   if (!dbReady) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -41,22 +49,22 @@ export function Home() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-x-hidden">
       {/* Header */}
       <PixelToolbar position="top">
-        <PixelToolbarTitle>BitTask</PixelToolbarTitle>
-        <PixelToolbarGroup>
+        <PixelToolbarTitle className="flex-1 min-w-0">BitTask</PixelToolbarTitle>
+        <PixelToolbarGroup className="flex-shrink-0">
           {/* Offline indicator */}
           {isOffline && (
             <span className="font-pixel text-[8px] text-pixel-warning px-2 py-1 bg-pixel-surface-alt border-2 border-pixel-border">
-              Offline
+              {t('settings.offline')}
             </span>
           )}
 
           {/* Update available */}
           {hasUpdate && (
             <PixelButton size="sm" variant="secondary" onClick={updateApp}>
-              Update
+              {t('common.update')}
             </PixelButton>
           )}
 
@@ -65,7 +73,7 @@ export function Home() {
             size="sm"
             variant="ghost"
             onClick={() => navigate('/settings')}
-            aria-label="Settings"
+            aria-label={t('settings.title')}
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -82,29 +90,29 @@ export function Home() {
       {isInstallable && (
         <div className="bg-pixel-primary px-4 py-2 flex items-center justify-between border-b-4 border-pixel-border">
           <span className="font-pixel text-[10px] text-pixel-darkest">
-            Install BitTask for offline access!
+            {t('settings.installApp')}!
           </span>
           <PixelButton size="sm" variant="secondary" onClick={() => void installApp()}>
-            Install
+            {t('settings.installApp')}
           </PixelButton>
         </div>
       )}
 
       {/* Filter Tabs */}
-      <div className="flex border-b-4 border-pixel-border bg-pixel-surface">
+      <div className="flex border-b-4 border-pixel-border bg-pixel-surface overflow-hidden">
         {(['all', 'pending', 'completed'] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={cn(
-              'flex-1 py-3 font-pixel text-[10px] uppercase',
+              'flex-1 min-w-0 py-3 font-pixel text-[10px] uppercase truncate',
               'transition-colors duration-100',
               filter === f
                 ? 'bg-pixel-primary text-pixel-darkest border-b-4 border-pixel-darkest -mb-1'
                 : 'text-pixel-text-muted hover:bg-pixel-surface-alt'
             )}
           >
-            {f}
+            {filterLabels[f]}
             {counts && (
               <span className="ml-1 opacity-70">
                 ({f === 'all' ? counts.total : f === 'pending' ? counts.pending : counts.completed})
@@ -115,7 +123,7 @@ export function Home() {
       </div>
 
       {/* Task List */}
-      <div className="flex-1 overflow-y-auto pixel-scrollbar p-4">
+      <div className="flex-1 overflow-x-hidden overflow-y-auto pixel-scrollbar p-4">
         {tasks === undefined ? (
           <div className="flex items-center justify-center py-8">
             <PixelLoader />
@@ -126,14 +134,10 @@ export function Home() {
               <span className="font-pixel text-2xl text-pixel-muted">?</span>
             </div>
             <p className="font-pixel text-xs text-pixel-text-muted mb-4">
-              {filter === 'all'
-                ? 'No tasks yet'
-                : filter === 'pending'
-                  ? 'All done!'
-                  : 'Nothing completed'}
+              {filter === 'all' ? t('home.noTasks') : t('home.filterCompleted')}
             </p>
             {filter === 'all' && (
-              <PixelButton onClick={() => setShowForm(true)}>Create First Task</PixelButton>
+              <PixelButton onClick={() => setShowForm(true)}>{t('home.addFirstTask')}</PixelButton>
             )}
           </div>
         ) : (
@@ -144,7 +148,7 @@ export function Home() {
       {/* FAB - Create Task */}
       <div className="fixed-bottom-safe flex justify-center pb-4">
         <PixelButton onClick={() => setShowForm(true)} size="lg" className="shadow-pixel">
-          + New Task
+          + {t('home.newTask')}
         </PixelButton>
       </div>
 

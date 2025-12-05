@@ -23,6 +23,7 @@ export default {
     success: 'Sucesso',
     warning: 'Aviso',
     info: 'Informação',
+    update: 'Atualizar',
   },
   welcome: {
     title: 'BitTask',
@@ -59,6 +60,10 @@ export default {
     createdAt: 'Criada em',
     updatedAt: 'Atualizada em',
     deleteConfirm: 'Excluir esta tarefa?',
+    deleteTask: 'Excluir Tarefa',
+    deleteTaskConfirm: 'Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.',
+    deleteAttachment: 'Excluir Anexo',
+    deleteAttachmentConfirm: 'Tem certeza que deseja excluir este anexo? Esta ação não pode ser desfeita.',
     attachments: 'Anexos',
     noAttachments: 'Nenhum anexo',
     addAttachment: 'Adicionar anexo',

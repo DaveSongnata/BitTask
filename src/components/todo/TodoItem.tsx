@@ -18,8 +18,7 @@ export function TodoItem({ task }: TodoItemProps) {
   const { toggleComplete } = useTaskOperations();
   const attachments = useTaskAttachments(task.id);
 
-  const handleToggle = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleToggle = async () => {
     if (task.id !== undefined) {
       await toggleComplete(task.id);
     }
@@ -42,7 +41,7 @@ export function TodoItem({ task }: TodoItemProps) {
         <div onClick={(e) => e.stopPropagation()}>
           <PixelCheckbox
             checked={task.completed}
-            onChange={() => void handleToggle({} as React.MouseEvent)}
+            onChange={() => void handleToggle()}
           />
         </div>
 

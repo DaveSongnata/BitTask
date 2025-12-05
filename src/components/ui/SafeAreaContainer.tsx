@@ -16,9 +16,9 @@ export function SafeAreaContainer({ children, className }: SafeAreaContainerProp
     <div
       className={cn(
         'safe-area-container',
-        'min-h-screen bg-pixel-bg text-pixel-text',
+        'min-h-screen max-w-full bg-pixel-bg text-pixel-text',
         'flex flex-col',
-        'pixel-scrollbar overflow-y-auto',
+        'pixel-scrollbar overflow-x-hidden overflow-y-auto',
         className
       )}
     >

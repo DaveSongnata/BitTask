@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { PixelButton } from './PixelButton';
@@ -12,40 +12,41 @@ export function PixelModal({ open, onClose, title, children, className }: PixelM
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
 
-  // Handle escape key
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    },
-    [onClose]
-  );
+  // Store onClose in a ref to avoid re-running effect
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
-  // Trap focus inside modal
+  // Trap focus inside modal - only run when open changes
   useEffect(() => {
     if (!open) return;
 
     // Store the current active element
     previousActiveElement.current = document.activeElement as HTMLElement;
 
-    // Focus the modal
+    // Focus the modal only on initial open
     modalRef.current?.focus();
 
+    // Handle escape key using ref to avoid dependency on onClose
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onCloseRef.current();
+      }
+    };
+
     // Add escape key listener
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleEscape);
 
     // Prevent body scroll
     document.body.style.overflow = 'hidden';
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
 
       // Restore focus
       previousActiveElement.current?.focus();
     };
-  }, [open, handleKeyDown]);
+  }, [open]); // Only depend on open, not handleKeyDown
 
   // Handle click outside
   const handleOverlayClick = (event: React.MouseEvent) => {
@@ -69,7 +70,7 @@ export function PixelModal({ open, onClose, title, children, className }: PixelM
         tabIndex={-1}
         className={cn(
           'pixel-modal modal-safe',
-          'w-full max-w-lg',
+          'w-full max-w-lg overflow-hidden',
           'animate-in zoom-in-95 duration-150',
           className
         )}
@@ -101,7 +102,7 @@ export function PixelModal({ open, onClose, title, children, className }: PixelM
         )}
 
         {/* Body */}
-        <div className="pixel-modal-body pixel-scrollbar max-h-[60vh] overflow-y-auto">
+        <div className="pixel-modal-body pixel-scrollbar max-h-[60vh] overflow-x-hidden overflow-y-auto">
           {children}
         </div>
       </div>

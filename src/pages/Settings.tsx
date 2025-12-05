@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   PixelButton,
   PixelToolbar,
@@ -7,6 +8,7 @@ import {
   PixelCard,
   PixelCardBody,
   PixelCheckbox,
+  LanguageSelector,
 } from '@/components/ui';
 import { useTheme, useSettings, useSettingsOperations, usePWAStatus, usePendingOpsCount } from '@/hooks';
 import { formatFileSize } from '@/lib/utils';
@@ -14,9 +16,10 @@ import type { ThemeName, ThemeMode } from '@/types';
 
 /**
  * Settings Page
- * App configuration including themes, storage, and PWA settings
+ * App configuration including themes, storage, language, and PWA settings
  */
 export function Settings() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { theme, mode, setTheme, setMode, resolvedMode } = useTheme();
   const settings = useSettings();
@@ -34,8 +37,14 @@ export function Settings() {
     void updateSettings({ mode: newMode });
   };
 
+  const modeLabels: Record<ThemeMode, string> = {
+    light: t('settings.modeLight'),
+    dark: t('settings.modeDark'),
+    system: t('settings.modeSystem'),
+  };
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-x-hidden">
       {/* Header */}
       <PixelToolbar position="top">
         <PixelToolbarGroup>
@@ -44,33 +53,41 @@ export function Settings() {
               <path strokeLinecap="square" strokeWidth={3} d="M15 19l-7-7 7-7" />
             </svg>
           </PixelButton>
-          <PixelToolbarTitle>Settings</PixelToolbarTitle>
+          <PixelToolbarTitle>{t('settings.title')}</PixelToolbarTitle>
         </PixelToolbarGroup>
       </PixelToolbar>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto pixel-scrollbar p-4 space-y-4">
+      <div className="flex-1 overflow-x-hidden overflow-y-auto pixel-scrollbar p-4 space-y-4">
+        {/* Language */}
+        <PixelCard>
+          <PixelCardBody>
+            <h3 className="font-pixel text-xs mb-4">{t('settings.language')}</h3>
+            <LanguageSelector />
+          </PixelCardBody>
+        </PixelCard>
+
         {/* Theme */}
         <PixelCard>
           <PixelCardBody>
-            <h3 className="font-pixel text-xs mb-4">Theme</h3>
+            <h3 className="font-pixel text-xs mb-4">{t('settings.theme')}</h3>
             <div className="space-y-3">
-              <div className="flex gap-2">
+              <div className="flex gap-2 overflow-hidden">
                 <button
                   onClick={() => handleThemeChange('slso8')}
-                  className={`flex-1 p-3 border-4 border-pixel-border font-pixel text-[10px] ${
+                  className={`flex-1 min-w-0 p-3 border-4 border-pixel-border font-pixel text-[10px] truncate ${
                     theme === 'slso8' ? 'bg-pixel-primary text-pixel-darkest' : 'bg-pixel-surface'
                   }`}
                 >
-                  SLSO8
+                  {t('settings.themeSlso8')}
                 </button>
                 <button
                   onClick={() => handleThemeChange('original')}
-                  className={`flex-1 p-3 border-4 border-pixel-border font-pixel text-[10px] ${
+                  className={`flex-1 min-w-0 p-3 border-4 border-pixel-border font-pixel text-[10px] truncate ${
                     theme === 'original' ? 'bg-pixel-primary text-pixel-darkest' : 'bg-pixel-surface'
                   }`}
                 >
-                  Original
+                  {t('settings.themeOriginal')}
                 </button>
               </div>
 
@@ -102,22 +119,22 @@ export function Settings() {
         {/* Mode (Light/Dark) */}
         <PixelCard>
           <PixelCardBody>
-            <h3 className="font-pixel text-xs mb-4">Mode</h3>
-            <div className="flex gap-2">
+            <h3 className="font-pixel text-xs mb-4">{t('settings.mode')}</h3>
+            <div className="flex gap-2 overflow-hidden">
               {(['light', 'dark', 'system'] as const).map((m) => (
                 <button
                   key={m}
                   onClick={() => handleModeChange(m)}
-                  className={`flex-1 p-3 border-4 border-pixel-border font-pixel text-[10px] capitalize ${
+                  className={`flex-1 min-w-0 p-3 border-4 border-pixel-border font-pixel text-[10px] truncate ${
                     mode === m ? 'bg-pixel-primary text-pixel-darkest' : 'bg-pixel-surface'
                   }`}
                 >
-                  {m}
+                  {modeLabels[m]}
                 </button>
               ))}
             </div>
             <p className="font-pixel text-[8px] text-pixel-text-muted mt-2">
-              Current: {resolvedMode}
+              {t('settings.currentMode', { mode: resolvedMode })}
             </p>
           </PixelCardBody>
         </PixelCard>
@@ -125,10 +142,12 @@ export function Settings() {
         {/* Storage */}
         <PixelCard>
           <PixelCardBody>
-            <h3 className="font-pixel text-xs mb-4">Storage</h3>
+            <h3 className="font-pixel text-xs mb-4">{t('settings.storage')}</h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="font-pixel text-[10px] text-pixel-text-muted">Max file size</span>
+                <span className="font-pixel text-[10px] text-pixel-text-muted">
+                  {t('settings.maxFileSize')}
+                </span>
                 <span className="font-pixel text-[10px]">
                   {settings ? formatFileSize(settings.maxFileSize) : '...'}
                 </span>
@@ -137,11 +156,13 @@ export function Settings() {
               <PixelCheckbox
                 checked={settings?.compressImages ?? true}
                 onChange={(checked) => void updateSettings({ compressImages: checked })}
-                label="Compress images"
+                label={t('settings.compressImages')}
               />
 
               <div className="flex justify-between items-center">
-                <span className="font-pixel text-[10px] text-pixel-text-muted">Image quality</span>
+                <span className="font-pixel text-[10px] text-pixel-text-muted">
+                  {t('settings.imageQuality')}
+                </span>
                 <input
                   type="range"
                   min="0.1"
@@ -159,19 +180,31 @@ export function Settings() {
         {/* PWA Status */}
         <PixelCard>
           <PixelCardBody>
-            <h3 className="font-pixel text-xs mb-4">App Status</h3>
+            <h3 className="font-pixel text-xs mb-4">{t('settings.appStatus')}</h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="font-pixel text-[10px] text-pixel-text-muted">Installed</span>
-                <span className="font-pixel text-[10px]">{isInstalled ? 'Yes' : 'No'}</span>
+                <span className="font-pixel text-[10px] text-pixel-text-muted">
+                  {t('settings.installed')}
+                </span>
+                <span className="font-pixel text-[10px]">
+                  {isInstalled ? t('common.yes') : t('common.no')}
+                </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="font-pixel text-[10px] text-pixel-text-muted">Network</span>
-                <span className="font-pixel text-[10px]">{isOffline ? 'Offline' : 'Online'}</span>
+                <span className="font-pixel text-[10px] text-pixel-text-muted">
+                  {t('settings.network')}
+                </span>
+                <span className="font-pixel text-[10px]">
+                  {isOffline ? t('settings.offline') : t('settings.online')}
+                </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="font-pixel text-[10px] text-pixel-text-muted">Pending sync</span>
-                <span className="font-pixel text-[10px]">{pendingOps ?? 0} operations</span>
+                <span className="font-pixel text-[10px] text-pixel-text-muted">
+                  {t('settings.pendingSync')}
+                </span>
+                <span className="font-pixel text-[10px]">
+                  {pendingOps ?? 0} {t('settings.operations')}
+                </span>
               </div>
 
               {isInstallable && !isInstalled && (
@@ -180,7 +213,7 @@ export function Settings() {
                   onClick={() => void installApp()}
                   className="w-full mt-2"
                 >
-                  Install App
+                  {t('settings.installApp')}
                 </PixelButton>
               )}
             </div>
@@ -193,7 +226,7 @@ export function Settings() {
             <PixelCheckbox
               checked={settings?.showWelcome ?? true}
               onChange={(checked) => void updateSettings({ showWelcome: checked })}
-              label="Show welcome screen"
+              label={t('settings.showWelcome')}
             />
           </PixelCardBody>
         </PixelCard>
@@ -201,14 +234,14 @@ export function Settings() {
         {/* About */}
         <PixelCard>
           <PixelCardBody>
-            <h3 className="font-pixel text-xs mb-4">About</h3>
+            <h3 className="font-pixel text-xs mb-4">{t('settings.about')}</h3>
             <div className="space-y-2">
-              <p className="font-pixel text-[10px]">BitTask v1.0.0</p>
+              <p className="font-pixel text-[10px]">{t('settings.version')}</p>
               <p className="font-pixel text-[8px] text-pixel-text-muted">
-                A pixel-art PWA todo app with offline-first architecture.
+                {t('settings.aboutDescription')}
               </p>
               <p className="font-pixel text-[8px] text-pixel-text-muted">
-                Built with React, TypeScript, Dexie, and Vite.
+                {t('settings.builtWith')}
               </p>
             </div>
           </PixelCardBody>

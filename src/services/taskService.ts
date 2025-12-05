@@ -49,16 +49,13 @@ export async function getTasks(options?: {
   priority?: Task['priority'];
   search?: string;
 }): Promise<Task[]> {
-  let collection = db.tasks.orderBy('createdAt').reverse();
+  // Get all tasks ordered by createdAt descending
+  let tasks = await db.tasks.orderBy('createdAt').reverse().toArray();
 
+  // Filter by completed status (in memory to avoid IndexedDB boolean issues)
   if (options?.completed !== undefined) {
-    collection = db.tasks
-      .where('completed')
-      .equals(options.completed ? 1 : 0)
-      .reverse();
+    tasks = tasks.filter((t) => t.completed === options.completed);
   }
-
-  let tasks = await collection.toArray();
 
   // Filter by priority if specified
   if (options?.priority) {

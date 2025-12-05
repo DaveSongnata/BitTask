@@ -15,9 +15,9 @@ export function PixelToolbar({ children, className, position = 'top' }: PixelToo
   return (
     <div
       className={cn(
-        'flex items-center justify-between gap-4',
+        'flex items-center justify-between gap-2',
         'bg-pixel-surface border-pixel-border',
-        'px-4 py-3',
+        'px-4 py-3 overflow-hidden',
 
         // Position-specific styles
         position === 'top' && [
