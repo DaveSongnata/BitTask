@@ -1,0 +1,138 @@
+/**
+ * BitTask Theme System
+ * Dual theme support: SLSO8 (default) and Original (PixelActUI default)
+ */
+
+/* ============================================
+   SLSO8 Theme (Default)
+   ============================================ */
+:root,
+:root[data-theme='slso8'] {
+  /* SLSO8 Palette */
+  --slso8-0: #ffecd6;
+  --slso8-1: #ffd4a3;
+  --slso8-2: #ffaa5e;
+  --slso8-3: #d08159;
+  --slso8-4: #8d697a;
+  --slso8-5: #544e68;
+  --slso8-6: #203c56;
+  --slso8-7: #0d2b45;
+
+  /* Semantic Color Mappings - Light Mode */
+  --pixel-bg: var(--slso8-0);
+  --pixel-bg-alt: var(--slso8-1);
+  --pixel-primary: var(--slso8-2);
+  --pixel-secondary: var(--slso8-3);
+  --pixel-muted: var(--slso8-4);
+  --pixel-dark: var(--slso8-5);
+  --pixel-darker: var(--slso8-6);
+  --pixel-darkest: var(--slso8-7);
+
+  /* UI Semantic Colors */
+  --pixel-text: var(--slso8-7);
+  --pixel-text-muted: var(--slso8-4);
+  --pixel-border: var(--slso8-5);
+  --pixel-accent: var(--slso8-2);
+  --pixel-surface: var(--slso8-0);
+  --pixel-surface-alt: var(--slso8-1);
+
+  /* State Colors */
+  --pixel-success: #5a9a4e;
+  --pixel-warning: var(--slso8-2);
+  --pixel-error: #c24a4a;
+  --pixel-info: var(--slso8-6);
+
+  /* Shadows */
+  --pixel-shadow: var(--slso8-5);
+  --pixel-shadow-color: rgba(13, 43, 69, 0.3);
+}
+
+/* SLSO8 Dark Mode - using .dark class set by ThemeProvider */
+:root[data-theme='slso8'].dark,
+:root.dark {
+  --pixel-bg: var(--slso8-7);
+  --pixel-bg-alt: var(--slso8-6);
+  --pixel-text: var(--slso8-0);
+  --pixel-text-muted: var(--slso8-4);
+  --pixel-border: var(--slso8-4);
+  --pixel-surface: var(--slso8-7);
+  --pixel-surface-alt: var(--slso8-6);
+  --pixel-shadow: var(--slso8-7);
+  --pixel-shadow-color: rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+   Original Theme (PixelActUI Default)
+   ============================================ */
+:root[data-theme='original'] {
+  /* PixelActUI Default Colors */
+  --pixel-bg: #f5f5f5;
+  --pixel-bg-alt: #e0e0e0;
+  --pixel-primary: #4a90d9;
+  --pixel-secondary: #6bb3f0;
+  --pixel-muted: #888888;
+  --pixel-dark: #444444;
+  --pixel-darker: #333333;
+  --pixel-darkest: #1a1a1a;
+
+  --pixel-text: #1a1a1a;
+  --pixel-text-muted: #666666;
+  --pixel-border: #333333;
+  --pixel-accent: #4a90d9;
+  --pixel-surface: #ffffff;
+  --pixel-surface-alt: #f0f0f0;
+
+  --pixel-success: #4caf50;
+  --pixel-warning: #ff9800;
+  --pixel-error: #f44336;
+  --pixel-info: #2196f3;
+
+  --pixel-shadow: #333333;
+  --pixel-shadow-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Original Dark Mode */
+:root[data-theme='original'].dark {
+  --pixel-bg: #1a1a1a;
+  --pixel-bg-alt: #2a2a2a;
+  --pixel-text: #f5f5f5;
+  --pixel-text-muted: #aaaaaa;
+  --pixel-border: #555555;
+  --pixel-surface: #1a1a1a;
+  --pixel-surface-alt: #2a2a2a;
+  --pixel-shadow: #000000;
+  --pixel-shadow-color: rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+   System Preference Detection (CSS fallback before JS loads)
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+  /* Fallback: Apply dark mode before JS initializes when system prefers dark */
+  :root:not(.dark):not([data-theme]) {
+    --pixel-bg: var(--slso8-7);
+    --pixel-bg-alt: var(--slso8-6);
+    --pixel-text: var(--slso8-0);
+    --pixel-text-muted: var(--slso8-4);
+    --pixel-border: var(--slso8-4);
+    --pixel-surface: var(--slso8-7);
+    --pixel-surface-alt: var(--slso8-6);
+    --pixel-shadow: var(--slso8-7);
+    --pixel-shadow-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ============================================
+   Priority Colors
+   ============================================ */
+:root {
+  --priority-low: #5a9a4e;
+  --priority-medium: var(--slso8-2);
+  --priority-high: #c24a4a;
+}
+
+:root.dark {
+  --priority-low: #6ab55a;
+  --priority-medium: var(--slso8-2);
+  --priority-high: #e05555;
+}

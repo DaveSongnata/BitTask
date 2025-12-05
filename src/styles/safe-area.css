@@ -1,0 +1,184 @@
+/**
+ * BitTask Safe Area Styles
+ * Handles iOS/Android safe area insets for PWA
+ */
+
+/* ============================================
+   Safe Area CSS Variables
+   ============================================ */
+:root {
+  /* Safe area insets with fallbacks */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+
+  /* Maximum safe area values (for newer browsers) */
+  --sat-max: env(safe-area-max-inset-top, var(--sat));
+  --sab-max: env(safe-area-max-inset-bottom, var(--sab));
+  --sal-max: env(safe-area-max-inset-left, var(--sal));
+  --sar-max: env(safe-area-max-inset-right, var(--sar));
+}
+
+/* ============================================
+   Safe Area Container
+   ============================================ */
+.safe-area-container {
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  padding-top: var(--sat);
+  padding-bottom: var(--sab);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+}
+
+/* For fixed headers */
+.safe-area-top {
+  padding-top: var(--sat);
+}
+
+/* For fixed footers/navigation */
+.safe-area-bottom {
+  padding-bottom: var(--sab);
+}
+
+/* For sidebars */
+.safe-area-left {
+  padding-left: var(--sal);
+}
+
+.safe-area-right {
+  padding-right: var(--sar);
+}
+
+/* ============================================
+   Fixed Elements with Safe Area
+   ============================================ */
+.fixed-top-safe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding-top: var(--sat);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+}
+
+.fixed-bottom-safe {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: var(--sab);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+}
+
+/* ============================================
+   Sticky Elements with Safe Area
+   ============================================ */
+.sticky-top-safe {
+  position: sticky;
+  top: var(--sat);
+  z-index: 40;
+}
+
+.sticky-bottom-safe {
+  position: sticky;
+  bottom: var(--sab);
+  z-index: 40;
+}
+
+/* ============================================
+   PWA Standalone Mode Adjustments
+   ============================================ */
+@media all and (display-mode: standalone) {
+  /* When running as installed PWA */
+  .safe-area-container {
+    /* Ensure content doesn't hide behind system UI */
+    min-height: calc(100vh - var(--sat) - var(--sab));
+    min-height: calc(100dvh - var(--sat) - var(--sab));
+  }
+}
+
+/* ============================================
+   iOS Safari Specific Fixes
+   ============================================ */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari specific styles */
+  .safe-area-container {
+    /* Fix for iOS rubber-banding */
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* ============================================
+   Landscape Orientation Adjustments
+   ============================================ */
+@media screen and (orientation: landscape) {
+  .safe-area-container {
+    /* In landscape, horizontal insets are more important */
+    padding-left: max(var(--sal), 16px);
+    padding-right: max(var(--sar), 16px);
+  }
+}
+
+/* ============================================
+   Notch/Cutout Aware Layouts
+   ============================================ */
+/* Header that accounts for notch */
+.header-with-notch {
+  min-height: calc(56px + var(--sat));
+  padding-top: var(--sat);
+  display: flex;
+  align-items: center;
+}
+
+/* Bottom navigation that accounts for home indicator */
+.bottom-nav-safe {
+  padding-bottom: calc(var(--sab) + 8px);
+  min-height: calc(64px + var(--sab));
+}
+
+/* ============================================
+   Full-bleed with Safe Area Padding
+   ============================================ */
+.full-bleed-safe {
+  /* Content goes edge to edge but padding respects safe areas */
+  margin-left: calc(var(--sal) * -1);
+  margin-right: calc(var(--sar) * -1);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+}
+
+/* ============================================
+   Modal/Dialog Safe Area Handling
+   ============================================ */
+.modal-safe {
+  max-height: calc(100vh - var(--sat) - var(--sab) - 32px);
+  max-height: calc(100dvh - var(--sat) - var(--sab) - 32px);
+  margin-top: calc(var(--sat) + 16px);
+  margin-bottom: calc(var(--sab) + 16px);
+}
+
+/* ============================================
+   Keyboard Safe Area (for virtual keyboard)
+   ============================================ */
+@supports (height: 100dvh) {
+  .keyboard-safe {
+    /* Use dynamic viewport to handle virtual keyboard */
+    min-height: 100dvh;
+    transition: min-height 0.3s ease;
+  }
+}
