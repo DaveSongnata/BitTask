@@ -1,5 +1,5 @@
 <p align="center">
-  <video src="https://www.youtube.com/watch?v=nDPo6DWLiAQ" alt="BitTask Logo" width="120" height="120">
+ https://www.youtube.com/watch?v=nDPo6DWLiAQ
 </p>
 
 <h1 align="center">BitTask</h1>
